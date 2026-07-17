@@ -58,13 +58,27 @@ function addTask(title) {
 
 function listTasks(args) {
   const tasks = loadTasks();
+  const filterArg = args.find((a) => a.startsWith("--filter="));
+  let filtered = tasks;
 
-  if (tasks.length === 0) {
+  if (filterArg) {
+    const value = filterArg.split("=")[1];
+    if (value === "done") {
+      filtered = tasks.filter((t) => t.done);
+    } else if (value === "pending") {
+      filtered = tasks.filter((t) => !t.done);
+    } else {
+      console.error(`Unknown filter value "${value}". Use --filter=done or --filter=pending.`);
+      process.exit(1);
+    }
+  }
+
+  if (filtered.length === 0) {
     console.log("No tasks found.");
     return;
   }
 
-  tasks.forEach((t) => {
+  filtered.forEach((t) => {
     const status = t.done ? "[x]" : "[ ]";
     console.log(`${status} #${t.id} ${t.title} (created ${t.createdAt})`);
   });
@@ -125,6 +139,7 @@ function main() {
       console.log("Commands:");
       console.log('  add "<title>"       Add a new task');
       console.log("  list                List all tasks");
+      console.log("  list --filter=done|pending   List filtered tasks");
       console.log("  done <id>           Mark a task as done");
       console.log("  remove <id>         Remove a task");
       break;
