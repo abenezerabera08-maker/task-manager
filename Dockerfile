@@ -2,11 +2,14 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-COPY package.json ./
-RUN npm install --omit=dev
+COPY package.json package-lock.json* ./
+RUN npm install
 
-COPY index.js ./
-COPY tasks.json ./
+COPY prisma ./prisma
+RUN npx prisma generate
 
-ENTRYPOINT ["node", "index.js"]
-CMD ["list"]
+COPY server.js ./
+
+EXPOSE 3000
+
+CMD ["sh", "-c", "npx prisma db push --skip-generate && node server.js"]
