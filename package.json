@@ -1,14 +1,20 @@
 {
-  "name": "task-manager",
-  "version": "1.0.0",
-  "description": "A basic command-line task manager that reads/writes tasks to a JSON file.",
-  "main": "index.js",
+  "name": "task-manager-api",
+  "version": "2.0.0",
+  "description": "A database-backed Task Manager API (Express + Prisma + PostgreSQL).",
+  "main": "server.js",
   "type": "commonjs",
-  "bin": {
-    "task-manager": "./index.js"
-  },
   "scripts": {
-    "start": "node index.js"
+    "start": "node server.js",
+    "prisma:generate": "prisma generate",
+    "prisma:push": "prisma db push"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "@prisma/client": "^6.19.3",
+    "express": "^4.22.2"
+  },
+  "devDependencies": {
+    "prisma": "^6.19.3"
+  }
 }
