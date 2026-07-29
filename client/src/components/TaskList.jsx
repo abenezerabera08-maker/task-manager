@@ -7,7 +7,9 @@ export default function TaskList({ token }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [newTitle, setNewTitle] = useState("");
+  const [newPriority, setNewPriority] = useState("medium");
   const [actionError, setActionError] = useState("");
+  const [showCompleted, setShowCompleted] = useState(false);
 
   async function fetchTasks() {
     setLoading(true);
@@ -34,10 +36,11 @@ export default function TaskList({ token }) {
       const res = await fetch(`${API_URL}/tasks`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ title: newTitle }),
+        body: JSON.stringify({ title: newTitle, priority: newPriority }),
       });
       if (!res.ok) throw new Error("Failed to create task");
       setNewTitle("");
+      setNewPriority("medium");
       fetchTasks();
     } catch (err) {
       setActionError(err.message);
@@ -72,6 +75,25 @@ export default function TaskList({ token }) {
     }
   }
 
+  async function handlePriorityChange(id, priority) {
+    setActionError("");
+    try {
+      const res = await fetch(`${API_URL}/tasks/${id}/priority`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ priority }),
+      });
+      if (!res.ok) throw new Error("Failed to update priority");
+      fetchTasks();
+    } catch (err) {
+      setActionError(err.message);
+    }
+  }
+
+  const displayedTasks = showCompleted
+    ? tasks
+    : tasks.filter((t) => !t.done);
+
   if (loading) return <p>Loading tasks...</p>;
   if (error) return <p style={{ color: "red" }}>{error}</p>;
 
@@ -84,20 +106,44 @@ export default function TaskList({ token }) {
           placeholder="New task title"
           required
         />
+        <select value={newPriority} onChange={(e) => setNewPriority(e.target.value)}>
+          <option value="low">low</option>
+          <option value="medium">medium</option>
+          <option value="high">high</option>
+        </select>
         <button type="submit">Add</button>
       </form>
 
       {actionError && <p style={{ color: "red" }}>{actionError}</p>}
 
-      {tasks.length === 0 ? (
+      <label style={{ display: "block", margin: "8px 0" }}>
+        <input
+          type="checkbox"
+          checked={showCompleted}
+          onChange={(e) => setShowCompleted(e.target.checked)}
+        />{" "}
+        Show completed
+      </label>
+
+      {displayedTasks.length === 0 ? (
         <p>No tasks yet.</p>
       ) : (
         <ul>
-          {tasks.map((task) => (
+          {displayedTasks.map((task) => (
             <li key={task.id}>
               <span style={{ textDecoration: task.done ? "line-through" : "none" }}>
                 {task.title}
-              </span>
+              </span>{" "}
+              <span>({task.priority})</span>
+              <select
+                value={task.priority}
+                onChange={(e) => handlePriorityChange(task.id, e.target.value)}
+                style={{ margin: "0 8px" }}
+              >
+                <option value="low">low</option>
+                <option value="medium">medium</option>
+                <option value="high">high</option>
+              </select>
               {!task.done && (
                 <button onClick={() => handleMarkDone(task.id)}>Mark done</button>
               )}
