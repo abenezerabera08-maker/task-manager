@@ -10,12 +10,15 @@ const logger = require("./logger");
 const pinoHttp = require("pino-http");
 
 const authRouter = require("./auth");
+const auth = require("./middleware/auth");
 
 const app = express();
 const prisma = new PrismaClient();
 
 app.use(express.json());
 app.use(pinoHttp({ logger }));
+
+app.use("/tasks", auth);
 
 // POST /tasks  { "title": "Buy milk" }
 app.post("/tasks", async (req, res) => {
