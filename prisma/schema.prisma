@@ -11,6 +11,7 @@ model Task {
   id        Int      @id @default(autoincrement())
   title     String
   done      Boolean  @default(false)
+  priority  String   @default("medium")
   createdAt DateTime @default(now())
   userId    Int
   user      User     @relation(fields: [userId], references: [id])

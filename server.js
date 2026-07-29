@@ -24,14 +24,14 @@ app.use("/tasks", auth);
 
 // POST /tasks  { "title": "Buy milk" }
 app.post("/tasks", async (req, res) => {
-  const { title } = req.body;
+  const { title, priority } = req.body;
 
   if (!title || typeof title !== "string") {
     return res.status(400).json({ error: "title is required and must be a string" });
   }
 
   const task = await prisma.task.create({
-    data: { title, userId: req.user.userId },
+    data: { title, priority: priority || "medium", userId: req.user.userId },
   });
 
   res.status(201).json(task);
@@ -75,6 +75,30 @@ app.patch("/tasks/:id/done", async (req, res) => {
   const task = await prisma.task.update({
     where: { id },
     data: { done: true },
+  });
+  res.json(task);
+});
+
+// PATCH /tasks/:id/priority
+app.patch("/tasks/:id/priority", async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (Number.isNaN(id)) {
+    return res.status(400).json({ error: "id must be a number" });
+  }
+
+  const { priority } = req.body;
+  if (!priority || !["low", "medium", "high"].includes(priority)) {
+    return res.status(400).json({ error: "priority must be one of: low, medium, high" });
+  }
+
+  const owned = await prisma.task.findFirst({ where: { id, userId: req.user.userId } });
+  if (!owned) {
+    return res.status(404).json({ error: `No task found with id ${id}` });
+  }
+
+  const task = await prisma.task.update({
+    where: { id },
+    data: { priority },
   });
   res.json(task);
 });
