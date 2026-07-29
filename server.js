@@ -9,6 +9,7 @@ const { PrismaClient } = require("@prisma/client");
 const logger = require("./logger");
 const pinoHttp = require("pino-http");
 
+const cors = require("cors");
 const authRouter = require("./auth");
 const auth = require("./middleware/auth");
 
@@ -17,6 +18,7 @@ const prisma = new PrismaClient();
 
 app.use(express.json());
 app.use(pinoHttp({ logger }));
+app.use(cors({ origin: "http://localhost:5173" }));
 
 app.use("/tasks", auth);
 

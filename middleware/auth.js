@@ -14,6 +14,7 @@ function auth(req, res, next) {
     req.user = decoded;
     next();
   } catch (err) {
+    req.log.warn({ err }, "Invalid or expired token");
     return res.status(401).json({ error: "Invalid or expired token" });
   }
 }
