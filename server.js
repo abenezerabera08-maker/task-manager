@@ -6,11 +6,14 @@
 
 const express = require("express");
 const { PrismaClient } = require("@prisma/client");
+const logger = require("./logger");
+const pinoHttp = require("pino-http");
 
 const app = express();
 const prisma = new PrismaClient();
 
 app.use(express.json());
+app.use(pinoHttp({ logger }));
 
 // POST /tasks  { "title": "Buy milk" }
 app.post("/tasks", async (req, res) => {
