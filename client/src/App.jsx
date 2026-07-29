@@ -1,5 +1,6 @@
 import { useState } from "react";
 import LoginForm from "./components/LoginForm";
+import TaskList from "./components/TaskList";
 
 function App() {
   const [token, setToken] = useState(null);
@@ -8,7 +9,7 @@ function App() {
     return (
       <>
         <h1>Task Manager</h1>
-        <p>Logged in.</p>
+        <TaskList token={token} />
       </>
     );
   }
