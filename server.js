@@ -29,7 +29,7 @@ app.post("/tasks", async (req, res) => {
   }
 
   const task = await prisma.task.create({
-    data: { title },
+    data: { title, userId: req.user.userId },
   });
 
   res.status(201).json(task);
@@ -41,11 +41,11 @@ app.post("/tasks", async (req, res) => {
 app.get("/tasks", async (req, res) => {
   const { filter } = req.query;
 
-  let where = {};
+  let where = { userId: req.user.userId };
   if (filter === "done") {
-    where = { done: true };
+    where = { ...where, done: true };
   } else if (filter === "pending") {
-    where = { done: false };
+    where = { ...where, done: false };
   } else if (filter !== undefined) {
     return res.status(400).json({ error: 'filter must be "done" or "pending"' });
   }
@@ -65,15 +65,16 @@ app.patch("/tasks/:id/done", async (req, res) => {
     return res.status(400).json({ error: "id must be a number" });
   }
 
-  try {
-    const task = await prisma.task.update({
-      where: { id },
-      data: { done: true },
-    });
-    res.json(task);
-  } catch (err) {
-    res.status(404).json({ error: `No task found with id ${id}` });
+  const owned = await prisma.task.findFirst({ where: { id, userId: req.user.userId } });
+  if (!owned) {
+    return res.status(404).json({ error: `No task found with id ${id}` });
   }
+
+  const task = await prisma.task.update({
+    where: { id },
+    data: { done: true },
+  });
+  res.json(task);
 });
 
 // DELETE /tasks/:id
@@ -83,12 +84,13 @@ app.delete("/tasks/:id", async (req, res) => {
     return res.status(400).json({ error: "id must be a number" });
   }
 
-  try {
-    const task = await prisma.task.delete({ where: { id } });
-    res.json(task);
-  } catch (err) {
-    res.status(404).json({ error: `No task found with id ${id}` });
+  const owned = await prisma.task.findFirst({ where: { id, userId: req.user.userId } });
+  if (!owned) {
+    return res.status(404).json({ error: `No task found with id ${id}` });
   }
+
+  const task = await prisma.task.delete({ where: { id } });
+  res.json(task);
 });
 
 app.use("/auth", authRouter);

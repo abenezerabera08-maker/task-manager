@@ -12,6 +12,8 @@ model Task {
   title     String
   done      Boolean  @default(false)
   createdAt DateTime @default(now())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id])
 }
 
 model User {
@@ -19,4 +21,5 @@ model User {
   email     String   @unique
   password  String
   createdAt DateTime @default(now())
+  tasks     Task[]
 }
