@@ -9,6 +9,8 @@ const { PrismaClient } = require("@prisma/client");
 const logger = require("./logger");
 const pinoHttp = require("pino-http");
 
+const authRouter = require("./auth");
+
 const app = express();
 const prisma = new PrismaClient();
 
@@ -85,6 +87,8 @@ app.delete("/tasks/:id", async (req, res) => {
     res.status(404).json({ error: `No task found with id ${id}` });
   }
 });
+
+app.use("/auth", authRouter);
 
 const PORT = process.env.PORT || 8080;
 if (require.main === module) {
